@@ -15,4 +15,6 @@ luaj-2.0.3/*.jar
 .settings
 .classpath
 .project
+ComputerCraft_Client.launch
+ComputerCraft_Server.launch
 ccfix_*
