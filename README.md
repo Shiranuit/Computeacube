@@ -1,6 +1,10 @@
+Computeacube
+=============
+
+Computeacube is a ComputerCraft fork for 1.12.2, any bug at this version has to be reported on this page not on the original ComputerCraft page
+
 ComputerCraft
 =============
-[![Build Status](https://travis-ci.org/dan200/ComputerCraft.svg?branch=master)](https://travis-ci.org/dan200/ComputerCraft)
 
 ComputerCraft is a Minecraft modification which adds programmable Robots and Computers to the world of Minecraft.
 If you're not familiar with ComputerCraft, visit the [Website](http://www.computercraft.info/download) or the [Wiki](http://www.computercraft.info/wiki) to find out more.
@@ -24,4 +28,3 @@ While ComputerCraft will no longer be actively developed by Daniel Ratcliffe, yo
 * It does not create bugs!
 
 The pull requests most likely to be accepted are those which fix bugs, simplify code, or make the mod compatible with newer versions of Minecraft.
-# Computeacube
