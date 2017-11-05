@@ -1,6 +1,11 @@
 Computeacube
 =============
 
+Computeacube is a ComputerCraft fork for 1.12.2, any bug at this version has to be reported on this page not on the original ComputerCraft page
+
+ComputerCraft
+=============
+
 ComputerCraft is a Minecraft modification which adds programmable Robots and Computers to the world of Minecraft.
 If you're not familiar with ComputerCraft, visit the [Website](http://www.computercraft.info/download) or the [Wiki](http://www.computercraft.info/wiki) to find out more.
 
