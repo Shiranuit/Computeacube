@@ -1,0 +1,8 @@
+{
+    "parent": "block/orientable",
+    "textures": {
+        "front": "computercraft:blocks/disk_drive_front_accepted",
+        "side": "computercraft:blocks/disk_drive_side",
+        "top": "computercraft:blocks/disk_drive_top"
+    }
+}
