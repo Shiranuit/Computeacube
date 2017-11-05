@@ -1,4 +1,4 @@
-ComputerCraft
+Computeacube
 =============
 [![Build Status](https://travis-ci.org/dan200/ComputerCraft.svg?branch=master)](https://travis-ci.org/dan200/ComputerCraft)
 
@@ -24,4 +24,3 @@ While ComputerCraft will no longer be actively developed by Daniel Ratcliffe, yo
 * It does not create bugs!
 
 The pull requests most likely to be accepted are those which fix bugs, simplify code, or make the mod compatible with newer versions of Minecraft.
-# Computeacube
