@@ -10,10 +10,12 @@ import com.google.common.collect.ImmutableMap;
 import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.ITurtleCommand;
 import dan200.computercraft.api.turtle.TurtleCommandResult;
+import dan200.computercraft.shared.util.EntityUtil;
 import dan200.computercraft.shared.util.WorldUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -53,11 +55,11 @@ public class TurtleInspectCommand implements ITurtleCommand
                 String name = Block.REGISTRY.getNameForObject( block ).toString();
                 int metadata = block.getMetaFromState( state );
 
-                Map<Object, Object> table = new HashMap<>();
+                Map<Object, Object> table = new HashMap<Object, Object>();
                 table.put( "name", name );
                 table.put( "metadata", metadata );
 
-                Map<Object, Object> stateTable = new HashMap<>();
+                Map<Object, Object> stateTable = new HashMap<Object, Object>();
                 for( ImmutableMap.Entry<IProperty<?>, ?> entry : state.getActualState( world, newPosition ).getProperties().entrySet() )
                 {
                     String propertyName = entry.getKey().getName();
@@ -79,10 +81,10 @@ public class TurtleInspectCommand implements ITurtleCommand
 
         if( !FAIL_ON_AIR )
         {
-            Map<Object, Object> table = new HashMap<>();
+            Map<Object, Object> table = new HashMap<Object, Object>();
             table.put( "name", "minecraft:air" );
             table.put( "metadata", 0 );
-            table.put( "state", new HashMap<>() );
+            table.put( "state", new HashMap<Object, Object>() );
             return TurtleCommandResult.success( new Object[]{ table } );
         }
         return TurtleCommandResult.failure( "No block to inspect" );

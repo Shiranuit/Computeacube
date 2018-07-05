@@ -10,6 +10,7 @@ import static dan200.computercraft.core.apis.ArgumentHelper.getString;
 import static dan200.computercraft.core.apis.ArgumentHelper.optString;
 import static dan200.computercraft.core.apis.ArgumentHelper.optTable;
 
+import java.io.Console;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -46,6 +47,11 @@ public class SocketAPI implements ILuaAPI
 	private static int sid = 0;
 	private List<CCSocket> sockets;
 
+	static {
+		listener = new ListenerThread();
+		listener.start();
+	}
+	
     public SocketAPI( IAPIEnvironment environment )
     {
 		sockets = new ArrayList<CCSocket>();
@@ -114,6 +120,8 @@ public class SocketAPI implements ILuaAPI
 					return new Object[]{sock};
 				} catch (IOException e) {
 					throw new LuaException(e.getMessage());
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			case 1:
 				Object[] objs = new Object[sockets.size()];

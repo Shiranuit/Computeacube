@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.luaj.vm2.LuaValue;
+
 public class Computer
 {
     public static final String[] s_sideNames = new String[] {
@@ -177,7 +179,7 @@ public class Computer
 
     private int m_id;
     private String m_label;
-    private final IComputerEnvironment m_environment;
+    public final IComputerEnvironment m_environment;
 
     private int m_ticksSinceStart;
     private boolean m_startRequested;
@@ -185,7 +187,7 @@ public class Computer
     private boolean m_blinking;
 
     private ILuaMachine m_machine;
-    private final List<ILuaAPI> m_apis;
+    public final List<ILuaAPI> m_apis;
     private final APIEnvironment m_apiEnvironment;
 
     private final Terminal m_terminal;
@@ -205,6 +207,10 @@ public class Computer
     private boolean m_inputChanged;
 
     private final IPeripheral[] m_peripherals;
+    
+    public LuaJLuaMachine lj_machine;
+    
+    public boolean rmIssue = false;
 
     public Computer( IComputerEnvironment environment, Terminal terminal, int id )
     {
@@ -251,6 +257,12 @@ public class Computer
     public IAPIEnvironment getAPIEnvironment()
     {
         return m_apiEnvironment;
+    }
+    
+    
+    
+    public void removeIssue() {
+    	this.rmIssue = true;
     }
 
     public void turnOn()
@@ -577,6 +589,10 @@ public class Computer
     {
         m_apis.add( api );
     }
+    
+    public void removeAPI(ILuaAPI api) {
+    	m_apis.remove(api);
+    }
 
     public void setPeripheral( int side, IPeripheral peripheral )
     {
@@ -611,12 +627,15 @@ public class Computer
         m_apis.add( new PeripheralAPI( m_apiEnvironment ) );
         m_apis.add( new OSAPI( m_apiEnvironment ) );
         m_apis.add( new BitAPI( m_apiEnvironment ) );
+
         m_apis.add( new BufferAPI( m_apiEnvironment ) );
         m_apis.add( new SocketAPI( m_apiEnvironment ) );
         m_apis.add( new SerialAPI() );
-        m_apis.add( new AdvMath() );
         m_apis.add( new BigDecimalAPI() );
         m_apis.add( new RegexAPI() );
+        m_apis.add( new UserDataAPI() );
+        //m_apis.add( new ImageAPI(m_apiEnvironment) ); // Fix path to the computer directory
+        
         if( ComputerCraft.http_enable )
         {
             m_apis.add( new HTTPAPI( m_apiEnvironment ) );
@@ -627,7 +646,9 @@ public class Computer
     {
         // Create the lua machine
         ILuaMachine machine = new LuaJLuaMachine( this );
-
+         if (this.rmIssue) {
+        	 //machine.removeIssue();
+         }
         // Add the APIs
         for(ILuaAPI api : m_apis)
         {

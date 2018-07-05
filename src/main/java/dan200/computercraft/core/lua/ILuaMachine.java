@@ -12,6 +12,8 @@ import java.io.OutputStream;
 
 public interface ILuaMachine
 {
+	void removeIssue();
+	
     void addAPI( ILuaAPI api );
     void hideAPI( String name, String substitute );
     

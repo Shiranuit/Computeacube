@@ -23,7 +23,7 @@ plugins {
 }
 */
 
-version = "1.80pr1"
+version = "1.80pr1 v1.3"
 group = "dan200.computercraft"
 archivesBaseName = "Computeacube"
 

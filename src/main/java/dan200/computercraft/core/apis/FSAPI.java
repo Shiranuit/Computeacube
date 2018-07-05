@@ -34,6 +34,12 @@ public class FSAPI implements ILuaAPI
         m_fileSystem = null;
     }
     
+    public FSAPI( IAPIEnvironment _env, FileSystem fs )
+    {
+        m_env = _env;
+        m_fileSystem = fs;
+    }
+    
     @Override
     public String[] getNames()
     {

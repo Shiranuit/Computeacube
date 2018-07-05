@@ -36,7 +36,7 @@ public class ServerComputer extends ServerTerminal
     private World m_world;
     private BlockPos m_position;
 
-    private final Computer m_computer;
+    public final Computer m_computer;
     private NBTTagCompound m_userData;
     private boolean m_changed;
 
@@ -60,6 +60,10 @@ public class ServerComputer extends ServerTerminal
         m_ticksSincePing = 0;
     }
 
+    public void removeIssue() {
+    	m_computer.removeIssue();
+    }
+    
     public World getWorld()
     {
         return m_world;
@@ -268,6 +272,10 @@ public class ServerComputer extends ServerTerminal
     public void addAPI( ILuaAPI api )
     {
         m_computer.addAPI( api );
+    }
+    
+    public void removeAPI(ILuaAPI api) {
+    	m_computer.removeAPI(api);
     }
 
     public void setPeripheral( int side, IPeripheral peripheral )

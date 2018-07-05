@@ -7,17 +7,28 @@
 package dan200.computercraft.shared.turtle.core;
 
 import dan200.computercraft.ComputerCraft;
+import dan200.computercraft.ComputerCraft.Blocks;
+import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.ITurtleCommand;
 import dan200.computercraft.api.turtle.TurtleAnimation;
 import dan200.computercraft.api.turtle.TurtleCommandResult;
 import dan200.computercraft.shared.util.DirectionUtil;
+import dan200.computercraft.shared.util.IEntityDropConsumer;
 import dan200.computercraft.shared.util.InventoryUtil;
 import dan200.computercraft.shared.util.WorldUtil;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirectional;
+import net.minecraft.block.BlockSlab;
+import net.minecraft.block.BlockSlab.EnumBlockHalf;
+import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockStairs.EnumHalf;
+import net.minecraft.block.BlockStairs.EnumShape;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.Items;
 import net.minecraft.item.*;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
@@ -25,6 +36,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
@@ -33,7 +45,11 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import dan200.computercraft.core.apis.ArgumentHelper;
+
+
 import org.apache.commons.lang3.tuple.Pair;
+import org.luaj.vm2.Lua;
 
 import javax.annotation.Nonnull;
 
@@ -224,12 +240,16 @@ public class TurtlePlaceCommand implements ITurtleCommand
         // Start claiming entity drops
         Entity hitEntity = hit.getKey();
         Vec3d hitPos = hit.getValue();
-        ComputerCraft.setEntityDropConsumer( hitEntity, ( entity, drop ) ->
+        ComputerCraft.setEntityDropConsumer( hitEntity, new IEntityDropConsumer()
         {
-            ItemStack remainder = InventoryUtil.storeItems( drop, turtle.getItemHandler(), turtle.getSelectedSlot() );
-            if( !remainder.isEmpty() )
+            @Override
+            public void consumeDrop( Entity entity, @Nonnull ItemStack drop )
             {
-                WorldUtil.dropItemStack( remainder, world, position, turtle.getDirection().getOpposite() );
+                ItemStack remainder = InventoryUtil.storeItems( drop, turtle.getItemHandler(), turtle.getSelectedSlot() );
+                if( !remainder.isEmpty() )
+                {
+                    WorldUtil.dropItemStack( remainder, world, position, turtle.getDirection().getOpposite() );
+                }
             }
         } );
 
@@ -343,6 +363,11 @@ public class TurtlePlaceCommand implements ITurtleCommand
         {
             return stack;
         }
+        
+        // Load up the turtle's inventory
+        Item item = stack.getItem();
+        ItemStack stackCopy = stack.copy();
+        turtlePlayer.loadInventory( stackCopy );
 
         // Re-orient the fake player
         EnumFacing playerDir = side.getOpposite();
@@ -358,10 +383,7 @@ public class TurtlePlaceCommand implements ITurtleCommand
             hitY = 0.45f;
         }
 
-        // Load up the turtle's inventory
-        Item item = stack.getItem();
-        ItemStack stackCopy = stack.copy();
-        turtlePlayer.loadInventory( stackCopy );
+
 
         // Do the deploying (put everything in the players inventory)
         boolean placed = false;
@@ -442,6 +464,64 @@ public class TurtlePlaceCommand implements ITurtleCommand
                     world.markBlockRangeForRenderUpdate( signTile.getPos(), signTile.getPos() );
                 }
             }
+        }
+        
+        if (placed && !(item instanceof ItemSign)) {
+        	if (extraArguments != null && extraArguments.length >= 1 && extraArguments[0] instanceof String) {
+        		String arg = extraArguments[0].toString();
+        		IBlockState iblock = turtlePlayer.world.getBlockState(playerPosition);
+        		EnumFacing facing = EnumFacing.byName(arg);
+        		if (facing == null) {
+        			if (arg.equals("left")) {
+        				facing = DirectionUtil.rotateLeft(turtle.getDirection());
+        			} else
+        			if (arg.equals("right")) {
+        				facing = DirectionUtil.rotateRight(turtle.getDirection());
+        			} else
+        			if (arg.equals("front")) {
+        				facing = turtle.getDirection();
+        			} else
+        			if (arg.equals("back")) {
+        				facing = turtle.getDirection().getOpposite();
+        			} else
+        				facing = side.getOpposite();
+        		}
+        		
+				if (iblock.getPropertyKeys().contains(BlockDirectional.FACING)) {
+					if (facing != null) {
+						iblock = iblock.withProperty(BlockDirectional.FACING, facing);
+					}
+        		}
+				if (iblock.getPropertyKeys().contains(BlockStairs.FACING)) {
+					if (facing != null) {
+						iblock = iblock.withProperty(BlockStairs.FACING, facing);
+					}
+        		}
+        		if (extraArguments.length >= 2) {
+        			arg = extraArguments[1].toString();
+        			try {
+	        			if (iblock.getPropertyKeys().contains(BlockStairs.HALF)) {
+	            			EnumHalf half = EnumHalf.valueOf(arg.toUpperCase());
+	        				if (half != null) {
+	        					iblock = iblock.withProperty(BlockStairs.HALF, half);
+	        				}
+	        			}
+        			} catch (Exception e) {
+						// TODO: handle exception
+					}
+        			try {
+	           			if (iblock.getPropertyKeys().contains(BlockSlab.HALF)) {
+	            			EnumBlockHalf half = EnumBlockHalf.valueOf(arg.toUpperCase());
+	        				if (half != null) {
+	        					iblock = iblock.withProperty(BlockSlab.HALF, half);
+	        				}
+	        			}
+        			} catch (Exception e) {
+						// TODO: handle exception
+					}
+        		}
+        		turtlePlayer.world.setBlockState(playerPosition, iblock);
+        	}
         }
 
         // Put everything we collected into the turtles inventory, then return

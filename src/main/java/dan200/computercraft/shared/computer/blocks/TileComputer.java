@@ -19,6 +19,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 
 import javax.annotation.Nonnull;
+
+import org.luaj.vm2.LuaValue;
+
 import java.util.List;
 
 public class TileComputer extends TileComputerBase
@@ -45,6 +48,8 @@ public class TileComputer extends TileComputerBase
             ComputerCraft.terminalHeight_computer
         );
         computer.setPosition( getPos() );
+        
+        computer.removeIssue();
         return computer;
     }
 

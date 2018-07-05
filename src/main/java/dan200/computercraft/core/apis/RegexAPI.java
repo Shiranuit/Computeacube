@@ -143,7 +143,7 @@ public class RegexAPI implements ILuaAPI {
 						String pat = arguments[1].toString();
 						Pattern pattern = Pattern.compile(pat);
 						String[] result = pattern.split(txt);
-						HashMap data = new HashMap();
+						HashMap<Object, Object> data = new HashMap<Object, Object>();
 						for (int i=0; i<result.length; i++) {
 							data.put(i+1, result[i]);
 						}

@@ -407,10 +407,11 @@ public class ComputerCraft
         pocketRenderer.clientInit();
     }
 
-
+    public MinecraftServer server;
     @Mod.EventHandler
     public void onServerStarting( FMLServerStartingEvent event )
     {
+    	server = event.getServer();
     }
 
     @Mod.EventHandler

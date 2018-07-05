@@ -43,6 +43,20 @@ import java.util.List;
 import static dan200.computercraft.client.gui.FixedWidthFontRenderer.FONT_HEIGHT;
 import static dan200.computercraft.client.gui.FixedWidthFontRenderer.FONT_WIDTH;
 
+/* This code is a part of the CCTweaks mod developed by SquidDev
+ * that you can found on GitHub at : https://github.com/SquidDev-CC/CCTweaks
+ * 
+ * The MIT License (MIT)
+ * Copyright (c) 2015-2017 SquidDev
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ */
+
 /**
  * Emulates map rendering for pocket computers
  *

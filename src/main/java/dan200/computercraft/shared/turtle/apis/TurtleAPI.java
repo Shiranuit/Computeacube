@@ -6,25 +6,30 @@
 
 package dan200.computercraft.shared.turtle.apis;
 
+import java.util.Optional;
+
 import dan200.computercraft.api.lua.ILuaContext;
-import dan200.computercraft.api.lua.ILuaObject;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.ITurtleCommand;
 import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.core.apis.IAPIEnvironment;
 import dan200.computercraft.core.apis.ILuaAPI;
-import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.turtle.core.*;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemShulkerBox;
 import net.minecraft.item.ItemStack;
-
-import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants.NBT;
 
 import static dan200.computercraft.core.apis.ArgumentHelper.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 public class TurtleAPI implements ILuaAPI
 {
@@ -58,7 +63,7 @@ public class TurtleAPI implements ILuaAPI
     }
     
     @Override
-    public void shutdown( )
+    public void shutdown()
     {
     }
        
@@ -112,49 +117,16 @@ public class TurtleAPI implements ILuaAPI
             "use",
             "useUp",
             "useDown",
-            "InspectSlot",
-            "InspectSlotUp",
-            "InspectSlotDown",
+            "inspectSlot",
+            "inspectSlotUp",
+            "inspectSlotDown",
+            "swing",
+            "swingUp",
+            "swingDown",
+            "getInventorySize",
+            "getInventorySizeUp",
+            "getInventorySizeDown",
         };
-    }
-    
-    public class LuaComputer implements ILuaObject
-    {
-    	private ServerComputer cc;
-    	public LuaComputer( ServerComputer cc) {
-    		this.cc = cc;
-    	}
-
-		@Override
-		public String[] getMethodNames() {
-			// TODO Auto-generated method stub
-			return new String[] {"getID","term","queueEvent"};
-		}
-
-		@Override
-		public Object[] callMethod(ILuaContext context, int method, Object[] arguments)
-				throws LuaException, InterruptedException {
-			// TODO Auto-generated method stub
-			switch (method) {
-			case 1: {
-				return new Object[] {cc.getID()};
-			}
-			case 2: {
-				return new Object[] {cc.getAPIEnvironment().getTerminal()};
-			}
-			case 3: {
-				String event = arguments[0].toString();
-				Object[] args = new Object[arguments.length-1];
-				for (int i=1; i<arguments.length; i++) {
-					args[i-1]=arguments[i];
-				}
-				cc.queueEvent(arguments[0].toString(),args);
-			}
-			default:
-				return null;
-			}
-		}
-    	
     }
     
     private Object[] tryCommand( ILuaContext context, ITurtleCommand command ) throws LuaException, InterruptedException
@@ -212,7 +184,8 @@ public class TurtleAPI implements ILuaAPI
         }
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Object[] callMethod( @Nonnull ILuaContext context, int method, @Nonnull Object[] args ) throws LuaException, InterruptedException
     {
         switch( method )
@@ -488,10 +461,63 @@ public class TurtleAPI implements ILuaAPI
                     int damage = stack.getItemDamage();
                     int count = stack.getCount();
 
-                    Map<Object, Object> table = new HashMap<>();
+                    Map<Object, Object> table = new HashMap<Object, Object>();
                     table.put( "name", name );
                     table.put( "damage", damage );
                     table.put( "count", count );
+
+                    HashMap<Object, Object> EnchantsList = new HashMap<Object, Object>();
+                    HashMap<Object, Object> ShulkerItems = new HashMap<Object, Object>();
+                    table.put("displayName", stack.getDisplayName());
+                    table.put("lifeDuration", stack.getMaxDamage() - stack.getItemDamage());
+                    table.put("lifeMaxDuration", stack.getMaxDamage());
+                    table.put("maxStackSize", stack.getMaxStackSize());
+                    table.put("hasDisplayName", stack.hasDisplayName());
+                    table.put("metadata", stack.getMetadata());
+        			table.put("repairCost", stack.getRepairCost());
+        			table.put("isItemDamaged", stack.isItemDamaged());
+        			table.put("isItemEnchantable", stack.isItemEnchantable());
+        			table.put("isEnchanted", stack.isItemEnchanted());
+        			table.put("isStackable", stack.isStackable());
+        			
+        			if (stack.getItem() instanceof ItemShulkerBox) {
+        				NBTTagList lst = stack.serializeNBT().getCompoundTag("tag").getCompoundTag("BlockEntityTag").getTagList("Items", NBT.TAG_COMPOUND);
+        				for (int m = 0; m <  lst.tagCount() ;m++) {
+        					HashMap<Object, Object> itemdt = new HashMap<Object, Object>();
+        					NBTTagCompound nitem = (NBTTagCompound) lst.getCompoundTagAt(m);
+        					ItemStack stk = new ItemStack(nitem);
+        					
+        					itemdt.put( "name", Item.REGISTRY.getNameForObject( stk.getItem() ).toString() );
+                            itemdt.put( "damage", stk.getItemDamage() );
+                            itemdt.put( "count", stk.getCount() );
+        				
+        					itemdt.put("displayName", stk.getDisplayName());
+        					itemdt.put("lifeDuration", stk.getMaxDamage() - stack.getItemDamage());
+        					itemdt.put("lifeMaxDuration", stk.getMaxDamage());
+        					itemdt.put("maxStackSize", stk.getMaxStackSize());
+        					itemdt.put("hasDisplayName", stk.hasDisplayName());
+        					itemdt.put("metadata", stk.getMetadata());
+        					itemdt.put("repairCost", stk.getRepairCost());
+        					itemdt.put("isItemDamaged", stk.isItemDamaged());
+        					itemdt.put("isItemEnchantable", stk.isItemEnchantable());
+        					itemdt.put("isEnchanted", stk.isItemEnchanted());
+        					itemdt.put("isStackable", stk.isStackable());
+                			
+        					ShulkerItems.put(m+1, itemdt);
+        				}
+        			}
+        			
+        			NBTTagList lst = stack.serializeNBT().getCompoundTag("tag").getTagList("ench", NBT.TAG_COMPOUND);
+        			for (int m = 0; m <  lst.tagCount() ;m++) {
+        				HashMap<Object, Object> Enchant = new HashMap<Object, Object>();
+        				NBTTagCompound nitem = (NBTTagCompound) lst.getCompoundTagAt(m);
+        				Enchant.put("enchantName", Enchantment.getEnchantmentByID(nitem.getInteger("id")).getName().replace("enchantment.", ""));
+        				Enchant.put("enchantLvl",  nitem.getInteger("lvl"));
+        				EnchantsList.put(m+1, Enchant);
+        			}
+        			table.put("Enchants", EnchantsList);
+        			table.put("ShulkerContainer", ShulkerItems);
+                    
                     return new Object[] { table };
                 }
                 else
@@ -516,18 +542,48 @@ public class TurtleAPI implements ILuaAPI
             }
             case 45:
             {
+            	//inspectInventory
             	int slot = optInt(args, 0, 1);
             	return tryCommand( context, new TurtleInspectInventory( InteractDirection.Forward, slot ) );
             }
             case 46:
             {
+            	//inspectInventory up
             	int slot = optInt(args, 0, 1);
             	return tryCommand( context, new TurtleInspectInventory( InteractDirection.Up, slot ) );
             }
             case 47:
             {
+            	//inspectInventory down
             	int slot = optInt(args, 0, 1);
             	return tryCommand( context, new TurtleInspectInventory( InteractDirection.Down, slot ) );
+            }
+            case 48:
+            {
+            	//swing
+            	return tryCommand( context, new TurtleSwingCommand( InteractDirection.Forward, args ) );
+            }
+            case 49:
+            {
+            	//swing up
+            	return tryCommand( context, new TurtleSwingCommand( InteractDirection.Up, args ) );
+            }
+            case 50:
+            {
+            	//swing down
+            	return tryCommand( context, new TurtleSwingCommand( InteractDirection.Down, args ) );
+            }
+            case 51: {
+            	//getInventorySize
+            	return tryCommand( context, new TurtleInventorySize( InteractDirection.Forward) );
+            }
+            case 52: {
+            	//getInventorySize Down
+            	return tryCommand( context, new TurtleInventorySize( InteractDirection.Down) );
+            }
+            case 53: {
+            	//getInventorySize Up
+            	return tryCommand( context, new TurtleInventorySize( InteractDirection.Up) );
             }
             default:
             {

@@ -38,7 +38,9 @@ import dan200.computercraft.api.lua.ILuaTask;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.core.apis.BigIntegerValue;
 import dan200.computercraft.core.apis.BitOpLib;
+import dan200.computercraft.core.apis.ComputerUtils;
 import dan200.computercraft.core.apis.ILuaAPI;
+import dan200.computercraft.core.apis.JS;
 import dan200.computercraft.core.computer.Computer;
 import dan200.computercraft.core.computer.ITask;
 import dan200.computercraft.core.computer.MainThread;
@@ -47,7 +49,7 @@ public class LuaJLuaMachine implements ILuaMachine
 {
     private Computer m_computer;
 
-    private LuaValue m_globals;
+    public LuaValue m_globals;
     private LuaValue m_loadString;
     private LuaValue m_assert;
     private LuaValue m_coroutine_create;
@@ -62,16 +64,20 @@ public class LuaJLuaMachine implements ILuaMachine
 
     private Map<Object, LuaValue> m_valuesInProgress;
     private Map<LuaValue, Object> m_objectsInProgress;
+    
+    public LuaValue debug;
+    public LuaValue luajava;
 
     public LuaJLuaMachine( Computer computer )
     {
         m_computer = computer;
+        m_computer.lj_machine = this;
+        
 
         // Create an environment to run in
         m_globals = JsePlatform.debugGlobals();
         m_loadString = m_globals.get("loadstring");
         m_assert = m_globals.get("assert");
-
         LuaValue coroutine = m_globals.get("coroutine");
         final LuaValue native_coroutine_create = coroutine.get("create");
         
@@ -119,8 +125,10 @@ public class LuaJLuaMachine implements ILuaMachine
         m_globals.set( "print", LuaValue.NIL );
         BigIntegerValue.setup(m_globals);
         BitOpLib.setup((LuaTable)m_globals);
-        //m_globals.set( "luajava", LuaValue.NIL );
-        //m_globals.set( "debug", LuaValue.NIL );
+        if (computer.rmIssue) {
+        	m_globals.set( "luajava", LuaValue.NIL );
+        	m_globals.set( "debug", LuaValue.NIL );
+        }
         m_globals.set( "newproxy", LuaValue.NIL );
         m_globals.set( "__inext", LuaValue.NIL );
 
@@ -142,8 +150,33 @@ public class LuaJLuaMachine implements ILuaMachine
         
         m_hiddenAPIs = new LuaTable();
         
-        hideAPI("luajava","luajava");
-        hideAPI("debug","debug");
+        HashMap EnumDir = new HashMap();
+        EnumDir.put("north", "north");
+        EnumDir.put("south", "south");
+        EnumDir.put("east", "east");
+        EnumDir.put("west", "west");
+        EnumDir.put("up", "up");
+        EnumDir.put("down", "down");
+        EnumDir.put("left", "left");
+        EnumDir.put("right", "right");
+        EnumDir.put("front", "front");
+        EnumDir.put("back", "back");
+        
+        HashMap EnumHalf = new HashMap();
+        EnumHalf.put("top", "top");
+        EnumHalf.put("bottom", "bottom");
+        
+        
+        m_globals.set("EnumDir", toValue(EnumDir));
+        m_globals.set("EnumHalf", toValue(EnumHalf));
+        
+        
+        //hideAPI("luajava","luajava");
+        //hideAPI("debug","debug");
+        //addAPI(new ComputerUtils(m_computer.getAPIEnvironment()));
+        //hideAPI("computer", "computer");
+        //addAPI(new JS(m_computer.getAPIEnvironment()));
+        //hideAPI("nashorn", "nashorn");
     }
 
     @Override
@@ -168,6 +201,11 @@ public class LuaJLuaMachine implements ILuaMachine
     	LuaValue hiddenAPI = m_globals.get(name);
     	m_hiddenAPIs.set(substitute, hiddenAPI);
     	m_globals.set(name, LuaValue.NIL);
+    }
+    
+    public void removeIssue() {
+    	this.m_globals.set("luajava", LuaValue.NIL);
+    	this.m_globals.set("debug", LuaValue.NIL);
     }
     
     @Override
@@ -546,7 +584,7 @@ public class LuaJLuaMachine implements ILuaMachine
         return table;
     }
 
-    private LuaValue toValue( Object object )
+    public LuaValue toValue( Object object )
     {
         if( object == null )
         {
@@ -643,7 +681,7 @@ public class LuaJLuaMachine implements ILuaMachine
         return values;
     }
 
-    private Object toObject( LuaValue value )
+    public Object toObject( LuaValue value )
     {
         switch( value.type() )
         {
@@ -722,7 +760,7 @@ public class LuaJLuaMachine implements ILuaMachine
         }        
     }
     
-    private Object[] toObjects( Varargs values, int startIdx )
+    public Object[] toObjects( Varargs values, int startIdx )
     {
         int count = values.narg();
         Object[] objects = new Object[ count - startIdx + 1 ];

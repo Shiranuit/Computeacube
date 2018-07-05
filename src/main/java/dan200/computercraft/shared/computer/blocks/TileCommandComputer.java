@@ -7,6 +7,8 @@
 package dan200.computercraft.shared.computer.blocks;
 
 import dan200.computercraft.ComputerCraft;
+import dan200.computercraft.core.apis.ComputerUtils;
+import dan200.computercraft.core.apis.JS;
 import dan200.computercraft.shared.computer.apis.CommandAPI;
 import dan200.computercraft.shared.computer.core.IComputer;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -170,6 +172,8 @@ public class TileCommandComputer extends TileComputer
     {
         ServerComputer computer = super.createComputer( instanceID, id );
         computer.addAPI( new CommandAPI( this ) );
+        computer.addAPI(new JS(computer.getAPIEnvironment()));
+        computer.addAPI(new ComputerUtils(computer.getAPIEnvironment()));
         return computer;
     }
 
